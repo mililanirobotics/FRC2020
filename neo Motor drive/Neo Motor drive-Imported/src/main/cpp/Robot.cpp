@@ -8,7 +8,6 @@
 #include "Robot.h"
 
 #include <iostream>
-#include <frc/Joystick.h>
 
 #include <frc/smartdashboard/SmartDashboard.h>
 
@@ -16,7 +15,6 @@ void Robot::RobotInit() {
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
   m_chooser.AddOption(kAutoNameCustom, kAutoNameCustom);
   frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
-
 }
 
 /**
@@ -61,28 +59,24 @@ void Robot::AutonomousPeriodic() {
   }
 }
 
-void Robot::TeleopInit() {
-  compressor.SetClosedLoopControl(true);
-  leftMotor.ConfigPeakOutputForward(1, 10);
-  leftMotor.ConfigPeakOutputReverse(-1, 10);
-  leftMotor.SetNeutralMode(motorcontrol::NeutralMode::Brake);
+void Robot::SetPower(double leftpower, double rightpower) {
+  leftFront.Set(leftpower);
+  leftBack.Set(leftpower);
+  rightFront.Set(rightpower);
+  rightBack.Set(rightpower);
+}
 
-  rightMotor.ConfigPeakOutputForward(1, 10);
-  rightMotor.ConfigPeakOutputReverse(-1, 10);
-  rightMotor.SetNeutralMode(motorcontrol::NeutralMode::Brake);
+void Robot::TeleopInit() {
+  rightFront.SetSmartCurrentLimit(20);
+  rightBack.SetSmartCurrentLimit(20);
+  leftFront.SetSmartCurrentLimit(20);
+  leftBack.SetSmartCurrentLimit(20);
 }
 
 void Robot::TeleopPeriodic() {
-  if(gamepad.GetRawButton(1)){
-    leftLiftPiston.Set(frc::DoubleSolenoid::kForward);
-  }
-  else if(gamepad.GetRawButton(2)){
-    leftLiftPiston.Set(frc::DoubleSolenoid::kReverse);
-  }
-
-  motorPower = gamepad.GetRawAxis(1);
-  rightMotor.Set(motorcontrol::ControlMode::PercentOutput, motorPower);
-  leftMotor.Set(motorcontrol::ControlMode::PercentOutput, -motorPower);
+  leftPower = -(gamepad.GetRawAxis(1));
+  rightPower = (gamepad.GetRawAxis(5));
+  SetPower(leftPower, rightPower);
 }
 
 void Robot::TestPeriodic() {}

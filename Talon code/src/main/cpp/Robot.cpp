@@ -66,10 +66,10 @@ void Robot::TeleopInit() {
 
   //bottomConveyorBeltOne.Set(ctre::phoenix::motorcontrol::ControlMode::Follower, 10);
 
-  /*topConveyorBeltTwo.ConfigPeakOutputForward(1.0, 0);
+  topConveyorBeltTwo.ConfigPeakOutputForward(1.0, 0);
   topConveyorBeltTwo.ConfigPeakOutputReverse(-1.0, 0);
   topConveyorBeltTwo.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
-  */
+  
   //bottomConveyorBeltTwo.Set(ctre::phoenix::motorcontrol::ControlMode::Follower, 12);
 }
 
@@ -78,7 +78,7 @@ void Robot::TeleopPeriodic() {
   conveyorBeltTwoPower = gamepad.GetRawAxis(5);
 
   topConveyorBeltOne.Set(ControlMode::PercentOutput, conveyorBeltOnePower);
-  //topConveyorBeltTwo.Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, conveyorBeltTwoPower);
+  topConveyorBeltTwo.Set(ControlMode::PercentOutput, -conveyorBeltOnePower);
 
   std:: cout << topConveyorBeltOne.GetMotorOutputPercent() << std::endl;
   std::cout << "left:" << conveyorBeltOnePower << std::endl;

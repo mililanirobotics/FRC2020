@@ -36,7 +36,7 @@ class Robot : public frc::TimedRobot {
 
   TalonSRX topConveyorBeltOne {10};
   //TalonSRX bottomConveyorBeltOne {11};
-  //TalonSRX topConveyorBeltTwo {12};
+  TalonSRX topConveyorBeltTwo {11};
   //TalonSRX bottomConveyorBeltTwo {13}; 
   
   double conveyorBeltOnePower;
