@@ -60,17 +60,17 @@ void Robot::AutonomousPeriodic() {
 }
 
 void Robot::SetPower(double leftpower, double rightpower) {
-  leftFront.Set(leftpower);
-  leftBack.Set(leftpower);
-  rightFront.Set(rightpower);
-  rightBack.Set(rightpower);
+  leftFront.Set(leftpower * .7);
+  leftBack.Set(leftpower * .7);
+  rightFront.Set(rightpower * .7);
+  rightBack.Set(rightpower * .7);
+}
+
+void Robot::IntakeInit(){
+  
 }
 
 void Robot::TeleopInit() {
-  rightFront.SetSmartCurrentLimit(20);
-  rightBack.SetSmartCurrentLimit(20);
-  leftFront.SetSmartCurrentLimit(20);
-  leftBack.SetSmartCurrentLimit(20);
 }
 
 void Robot::TeleopPeriodic() {

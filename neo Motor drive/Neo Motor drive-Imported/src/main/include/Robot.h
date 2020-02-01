@@ -1,3 +1,4 @@
+
 /*----------------------------------------------------------------------------*/
 /* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
@@ -12,6 +13,7 @@
 #include <frc/TimedRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
 #include <rev/CANSparkMax.h>
+#include <ctre/Phoenix.h>
 #include <frc/Joystick.h>
 
 class Robot : public frc::TimedRobot {
@@ -23,6 +25,7 @@ class Robot : public frc::TimedRobot {
   void TeleopInit() override;
   void TeleopPeriodic() override;
   void TestPeriodic() override;
+  void IntakeInit();
   void SetPower(double leftpower, double rightPower);
 
  private:
@@ -37,6 +40,9 @@ class Robot : public frc::TimedRobot {
   rev::CANSparkMax leftBack{11, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax rightFront{12, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax rightBack{13, rev::CANSparkMax::MotorType::kBrushless};
+
+  TalonSRX intakeOne {14};
+  TalonSRX intakeTwo {15};
   
   double leftPower;
   double rightPower;
