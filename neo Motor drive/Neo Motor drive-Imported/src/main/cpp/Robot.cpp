@@ -38,6 +38,7 @@ void Robot::RobotPeriodic() {}
  * if-else structure below with additional strings. If using the SendableChooser
  * make sure to add them to the chooser code above as well.
  */
+
 void Robot::AutonomousInit() {
   m_autoSelected = m_chooser.GetSelected();
   // m_autoSelected = SmartDashboard::GetString("Auto Selector",
@@ -45,38 +46,94 @@ void Robot::AutonomousInit() {
   std::cout << "Auto selected: " << m_autoSelected << std::endl;
 
   if (m_autoSelected == kAutoNameCustom) {
-    // Custom Auto goes here
+    leftFront.Set (leftPower * -0.1);
+    leftBack.Set (leftPower * -0.1);
+    rightFront.Set (rightPower * 0.1);
+    rightBack.Set (rightPower * 0.1);
+    //wait
+    leftFront.Set (leftPower);
+    leftBack.Set (leftPower);
+    rightFront.Set (rightPower);
+    rightBack.Set (rightPower);
+    leftFront.Set (leftPower * 0.4);
+    leftBack.Set (leftPower * 0.4);
+    rightFront.Set (rightPower * -0.4);
+    rightBack.Set (rightPower * -0.4);
   } else {
     // Default Auto goes here
   }
 }
 
+
 void Robot::AutonomousPeriodic() {
-  if (m_autoSelected == kAutoNameCustom) {
+   if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
-  } else {
+  } 
+  else {
     // Default Auto goes here
   }
 }
 
 void Robot::SetPower(double leftpower, double rightpower) {
-  leftFront.Set(leftpower * .7);
-  leftBack.Set(leftpower * .7);
-  rightFront.Set(rightpower * .7);
-  rightBack.Set(rightpower * .7);
+  // leftFront.Set(leftpower * .7);
+  // leftBack.Set(leftpower * .7);
+  // rightFront.Set(rightpower * .7);
+  // rightBack.Set(rightpower * .7);
 }
 
-void Robot::IntakeInit(){
-  
-}
+void Robot::IntakeInit(){}
 
-void Robot::TeleopInit() {
+void Robot::TeleopInit() {}
+
+void Robot::pivotMechanism() {
+  #ifdef SINGLESOLENOID
+  if (gamepad.GetRawButton(1)) {
+    pivotLeftPiston.Set(true);
+  }
+  else if (gamepad.GetRawButton(1) == false) {
+    pivotLeftPiston.Set(false);
+  }
+  if (gamepad.GetRawButton(2)) {
+    pivotRightPiston.Set(true);
+  }
+  else if (gamepad.GetRawButton(2) == false) {
+    pivotRightPiston.Set(false);
+  }
+  #else
+  if(gamepad.GetRawButton(1)){
+    pivotLeftPiston.Set(frc::DoubleSolenoid::kForward);
+  }
+  else if(gamepad.GetRawButton(1)){ 
+    pivotLeftPiston.Set(frc::DoubleSolenoid::kReverse);
+  }
+  if(gamepad.GetRawButton(2)){
+    pivotRightPiston.Set(frc::DoubleSolenoid::kForward);
+  }
+  else if(gamepad.GetRawButton(2)){
+    pivotRightPiston.Set(frc::DoubleSolenoid::kReverse);
+  }
+  #endif
 }
 
 void Robot::TeleopPeriodic() {
   leftPower = -(gamepad.GetRawAxis(1));
   rightPower = (gamepad.GetRawAxis(5));
-  SetPower(leftPower, rightPower);
+  rightTrigger = (gamepad.GetRawAxis(3));
+
+  if (rightTrigger == 1)
+  {
+  intakeLeft.Set(ControlMode::PercentOutput, 1);
+  intakeRight.Set(ControlMode::PercentOutput, -1);
+  std::cout << "1";
+  }
+  else
+  {
+  intakeLeft.Set(ControlMode::PercentOutput, 0);
+  intakeRight.Set(ControlMode::PercentOutput, 0);
+  std::cout << "0";
+  }
+  
+  pivotMechanism();
 }
 
 void Robot::TestPeriodic() {}
