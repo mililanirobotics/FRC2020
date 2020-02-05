@@ -10,6 +10,10 @@
 #include <iostream>
 
 #include <frc/smartdashboard/SmartDashboard.h>
+#include "networktables/NetworkTableInstance.h"
+#include "networktables/NetworkTableEntry.h"
+#include "networktables/NetworkTable.h"
+#include <math.h>
 
 void Robot::RobotInit() {
   m_chooser.SetDefaultOption(kAutoNameDefault, kAutoNameDefault);
@@ -59,24 +63,78 @@ void Robot::AutonomousPeriodic() {
   }
 }
 
-void Robot::SetPower(double leftpower, double rightpower) {
-  leftFront.Set(leftpower);
-  leftBack.Set(leftpower);
-  rightFront.Set(rightpower);
-  rightBack.Set(rightpower);
+void Robot::CameraDetection()
+{
+  auto inst = nt::NetworkTableInstance::GetDefault();
+  auto limelight = inst.GetTable("limelight");
+
+  limelight->PutNumber("stream", 0);
+}
+
+void Robot::ArcadeDrivePower()
+{
+  double forwardBackward = -(gamepad.GetRawAxis(1));
+  double leftRight = gamepad.GetRawAxis(4);
+  if (fabs(forwardBackward) >= 0.05 && fabs(leftRight) <= 0.05)
+  {
+    leftFront.Set(forwardBackward);
+    leftBack.Set(forwardBackward);
+    rightFront.Set(forwardBackward);
+    rightBack.Set(forwardBackward);
+    
+  }
+  else if (fabs(forwardBackward) >= 0.05 && fabs(leftRight) >= 0.05)
+  {
+    std::cout << "IN" << std::endl;
+    if (forwardBackward > 0)
+    {
+      drivePower = forwardBackward - fabs(leftRight);
+    }
+    else if(forwardBackward < 0){
+      drivePower = forwardBackward + fabs(leftRight);
+    }
+    if (leftRight > 0){
+      leftFront.Set(forwardBackward);
+      leftBack.Set(forwardBackward);
+      rightFront.Set(drivePower);
+      rightBack.Set(drivePower);
+    }
+    else if (leftRight < 0){
+      leftFront.Set(drivePower);
+      leftBack.Set(drivePower);
+      rightFront.Set(forwardBackward);
+      rightBack.Set(forwardBackward);
+    }
+
+  }
+  else{
+    leftFront.Set(0);
+    leftBack.Set(0);
+    rightFront.Set(0);
+    rightBack.Set(0);
+  }
+  
+    std::cout << "leftFront: " << leftFront.Get() << std::endl;
+    std::cout << "leftBack: " << leftBack.Get() << std::endl;
+    std::cout << "rightFront: " << rightFront.Get() << std::endl;
+    std::cout << "rightBack: " << rightBack.Get() << std::endl;
+}
+
+void Robot::TankDrivePower() {
+  leftPower = -(gamepad.GetRawAxis(1));
+  rightPower = (gamepad.GetRawAxis(5));
+  leftFront.Set(leftPower);
+  leftBack.Set(leftPower);
+  rightFront.Set(rightPower);
+  rightBack.Set(rightPower);
 }
 
 void Robot::TeleopInit() {
-  rightFront.SetSmartCurrentLimit(20);
-  rightBack.SetSmartCurrentLimit(20);
-  leftFront.SetSmartCurrentLimit(20);
-  leftBack.SetSmartCurrentLimit(20);
 }
 
 void Robot::TeleopPeriodic() {
-  leftPower = -(gamepad.GetRawAxis(1));
-  rightPower = (gamepad.GetRawAxis(5));
-  SetPower(leftPower, rightPower);
+  //TankDrivePower();
+  ArcadeDrivePower();
 }
 
 void Robot::TestPeriodic() {}

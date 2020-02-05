@@ -23,7 +23,9 @@ class Robot : public frc::TimedRobot {
   void TeleopInit() override;
   void TeleopPeriodic() override;
   void TestPeriodic() override;
-  void SetPower(double leftpower, double rightPower);
+  void TankDrivePower();
+  void ArcadeDrivePower();
+  void CameraDetection();
 
  private:
   frc::SendableChooser<std::string> m_chooser;
@@ -38,6 +40,7 @@ class Robot : public frc::TimedRobot {
   rev::CANSparkMax rightFront{12, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax rightBack{13, rev::CANSparkMax::MotorType::kBrushless};
   
-  double leftPower;
-  double rightPower;
+  double leftPower; // used for the tank drive
+  double rightPower; // used for the tank drive
+  double drivePower; // used for arcade drive
 };
