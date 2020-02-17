@@ -1,4 +1,3 @@
-
 /*----------------------------------------------------------------------------*/
 /* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
 /* Open Source Software - may be modified and shared by FRC teams. The code   */
@@ -16,13 +15,19 @@
 #include <frc/Compressor.h>
 #include <frc/Solenoid.h>
 #include <frc/DoubleSolenoid.h>
-
+#include <AHRS.h>
 #include <rev/CANSparkMax.h>
+
+
 
 #include <ctre/Phoenix.h>
 #define SINGLESOLENOID
+#define TRENCHRUNCLEARPOS1OPT1
+#define TRENCHRUNCLEARPOS1OPT2
+#define TRENCHRUNCLEARPOS2OPT1
+#define TRENCHRUNCLEARPOS2OPT2
 
-class Robot : public frc::TimedRobot {
+class Robot: public frc::TimedRobot {
  public:
   void RobotInit() override;
   void RobotPeriodic() override;
@@ -58,14 +63,18 @@ class Robot : public frc::TimedRobot {
   rev::CANSparkMax leftFront{10, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax leftBack{11, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax rightFront{12, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax rightBack{13, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax rightBack{13, rev::CANSparkMax::MotorType::kBrushless}; 
 
   TalonSRX intakeLeft {14};
   TalonSRX intakeRight {15};
+  TalonSRX winchLeft {16};
+  TalonSRX winchRight {17};
   
   void pivotMechanism();
 
   double leftPower;
   double rightPower;
+
   double rightTrigger;
+  double leftBumper;
 };

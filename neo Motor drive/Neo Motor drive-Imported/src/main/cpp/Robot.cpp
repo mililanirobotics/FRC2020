@@ -64,9 +64,73 @@ void Robot::AutonomousInit() {
   }
 }
 
-
 void Robot::AutonomousPeriodic() {
-   if (m_autoSelected == kAutoNameCustom) {
+  leftBack.Follow(leftFront);
+  rightBack.Follow(rightFront);
+
+  // Position One, Option One
+
+  leftFront.Set(leftPower * -0.16);
+  rightFront.Set(rightPower * 0.16);
+  AHRS GetAngle();
+  leftFront.Set(leftPower * 1);
+  rightFront.Set(rightPower * 1);
+  //Wait
+  leftFront.Set(leftPower * -0.1);
+  rightFront.Set(rightPower * 0.1);
+
+  leftFront.Set(leftPower * -1);
+  rightFront.Set(rightPower * -1);
+
+  //Position One, Option Two
+  leftFront.Set(leftPower * -0.31);
+  rightFront.Set(rightPower * 0.31);
+
+  leftFront.Set(leftPower * 1);
+  rightFront.Set(rightPower * 1);
+
+  leftFront.Set(leftPower * 0.31);
+  rightFront.Set(rightPower * -0.31);
+
+  leftFront.Set(leftPower * 1);
+  rightFront.Set(rightPower * 1);
+  //Wait
+  leftFront.Set(leftPower * -0.1);
+  rightFront.Set(rightPower * 0.1);
+
+  leftFront.Set(leftPower * -1);
+  rightFront.Set(rightPower * -1);
+
+  //Position Two, Option One
+  leftFront.Set(leftPower * 0.31);
+  rightFront.Set(rightPower * -0.31);
+
+  leftFront.Set(leftPower * 1);
+  rightFront.Set(rightPower * -1);
+  //Wait
+  leftFront.Set(leftPower * -0.16);
+  rightFront.Set(rightPower * 0.16);
+
+  leftFront.Set(leftPower * -1);
+  rightFront.Set(rightPower * -1);
+
+  //Position Two, Option Two
+  leftFront.Set(leftPower * 0.31);
+  rightFront.Set(rightPower * -0.31);
+
+  leftFront.Set(leftPower * 1);
+  rightFront.Set(rightPower * 1);
+
+  leftFront.Set(leftPower * -0.31);
+  rightFront.Set(leftPower * 0.31);
+  //Wait
+  leftFront.Set(leftPower * -0.29);
+  rightFront.Set(rightPower * 0.29);
+
+  leftFront.Set(leftPower * 1);
+  rightFront.Set(rightPower * 1);
+
+  if (m_autoSelected == kAutoNameCustom) {
     // Custom Auto goes here
   } 
   else {
@@ -88,29 +152,53 @@ void Robot::TeleopInit() {}
 void Robot::pivotMechanism() {
   #ifdef SINGLESOLENOID
   if (gamepad.GetRawButton(1)) {
-    pivotLeftPiston.Set(true);
+    pivotOnePiston.Set(true);
   }
   else if (gamepad.GetRawButton(1) == false) {
-    pivotLeftPiston.Set(false);
+    pivotOnePiston.Set(false);
   }
   if (gamepad.GetRawButton(2)) {
-    pivotRightPiston.Set(true);
+    pivotTwoPiston.Set(true);
   }
   else if (gamepad.GetRawButton(2) == false) {
-    pivotRightPiston.Set(false);
+    pivotTwoPiston.Set(false);
+  }
+  if (gamepad.GetRawButton(3)) {
+    pivotThreePiston.Set(true);
+  }
+  else if (gamepad.GetRawButton(3) == false) {
+    pivotThreePiston.Set(false);
+  }
+  if (gamepad.GetRawButton(4)) {
+    pivotFourPiston.Set(true);
+  }
+  else if (gamepad.GetRawButton(4) == false) {
+    pivotFourPiston.Set(false);
   }
   #else
   if(gamepad.GetRawButton(1)){
-    pivotLeftPiston.Set(frc::DoubleSolenoid::kForward);
+    pivotOnePiston.Set(frc::DoubleSolenoid::kForward);
   }
   else if(gamepad.GetRawButton(1)){ 
-    pivotLeftPiston.Set(frc::DoubleSolenoid::kReverse);
+    pivotOnePiston.Set(frc::DoubleSolenoid::kReverse);
   }
   if(gamepad.GetRawButton(2)){
-    pivotRightPiston.Set(frc::DoubleSolenoid::kForward);
+    pivotTwoPiston.Set(frc::DoubleSolenoid::kForward);
   }
   else if(gamepad.GetRawButton(2)){
-    pivotRightPiston.Set(frc::DoubleSolenoid::kReverse);
+    pivotTwoPiston.Set(frc::DoubleSolenoid::kReverse);
+  }
+    if(gamepad.GetRawButton(3)){
+    pivotThreePiston.Set(frc::DoubleSolenoid::kForward);
+  }
+  else if(gamepad.GetRawButton(3)){ 
+    pivotThreePiston.Set(frc::DoubleSolenoid::kReverse);
+  }
+  if(gamepad.GetRawButton(4)){
+    pivotFourPiston.Set(frc::DoubleSolenoid::kForward);
+  }
+  else if(gamepad.GetRawButton(4)){
+    pivotFourPiston.Set(frc::DoubleSolenoid::kReverse);
   }
   #endif
 }
@@ -119,6 +207,7 @@ void Robot::TeleopPeriodic() {
   leftPower = -(gamepad.GetRawAxis(1));
   rightPower = (gamepad.GetRawAxis(5));
   rightTrigger = (gamepad.GetRawAxis(3));
+  leftBumper = (gamepad.GetRawButton(5));
 
   if (rightTrigger == 1)
   {
@@ -133,6 +222,17 @@ void Robot::TeleopPeriodic() {
   std::cout << "0";
   }
   
+  if (leftBumper){
+    winchLeft.Set(ControlMode::PercentOutput, 1);
+    winchRight.Set(ControlMode::PercentOutput, 1);
+    std::cout << "1";
+  }
+  else {
+    winchLeft.Set(ControlMode::PercentOutput, 0);
+    winchRight.Set(ControlMode::PercentOutput, 0);
+    std::cout << "0";
+  }
+
   pivotMechanism();
 }
 
