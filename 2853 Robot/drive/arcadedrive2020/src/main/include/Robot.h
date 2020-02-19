@@ -7,15 +7,18 @@
 
 #pragma once
 
-
-
 #include <string>
 
+#include <rev/CANError.h>
+#include <rev/CANSparkMax.h>
+#include <rev/SparkMax.h>
+#include <rev/ControlType.h>
+
+#include <frc/CAN.h>
+#include <frc/Spark.h>
+#include <frc/Joystick.h>
 #include <frc/TimedRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
-#include <frc/Compressor.h>
-#include <frc/Joystick.h>
-#include <ctre/Phoenix.h>
 
 class Robot : public frc::TimedRobot {
  public:
@@ -32,13 +35,13 @@ class Robot : public frc::TimedRobot {
   const std::string kAutoNameDefault = "Default";
   const std::string kAutoNameCustom = "My Auto";
   std::string m_autoSelected;
-
-  frc::Compressor compressor{0};
-  frc::DoubleSolenoid leftLiftPiston{4,5};
   frc::Joystick gamepad{0};
 
-  TalonSRX leftMotor{10};
-  TalonSRX rightMotor{11};
+  rev::CANSparkMax NeoMotor{10, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax NeoMotor{11, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax NeoMotor{12, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax NeoMotor{13, rev::CANSparkMax::MotorType::kBrushless};
 
-  double motorPower;
+  double motorPower = 0.0;
+  double joystick;
 };
