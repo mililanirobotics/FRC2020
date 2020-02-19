@@ -7,15 +7,12 @@
 
 #pragma once
 
-
-
 #include <string>
 
 #include <frc/TimedRobot.h>
-#include <frc/smartdashboard/SendableChooser.h>
 #include <frc/Compressor.h>
-#include <frc/Joystick.h>
-#include <ctre/Phoenix.h>
+#include <frc/Solenoid.h>
+#include <frc/smartdashboard/SendableChooser.h>
 
 class Robot : public frc::TimedRobot {
  public:
@@ -34,11 +31,5 @@ class Robot : public frc::TimedRobot {
   std::string m_autoSelected;
 
   frc::Compressor compressor{0};
-  frc::DoubleSolenoid leftLiftPiston{4,5};
-  frc::Joystick gamepad{0};
-
-  TalonSRX leftMotor{10};
-  TalonSRX rightMotor{11};
-
-  double motorPower;
-};
+  frc::Solenoid rightUpPiston{0};
+  };
