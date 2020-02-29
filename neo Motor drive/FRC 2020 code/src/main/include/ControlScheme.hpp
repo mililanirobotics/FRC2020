@@ -20,6 +20,7 @@ class TankControlScheme:public PrimaryControlScheme
     TankControlScheme(frc::Joystick &gamepad);
     frc::Joystick& m_gamepad;
 };
+
 class MatthewPrimary: public TankControlScheme
 {
     public:
@@ -27,6 +28,7 @@ class MatthewPrimary: public TankControlScheme
     virtual double ArmLift();
     MatthewPrimary(frc::Joystick &gamepad);
 };
+
 class KentPrimary: public TankControlScheme
 {
     public:

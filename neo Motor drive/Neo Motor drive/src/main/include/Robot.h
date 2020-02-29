@@ -33,10 +33,10 @@ class Robot : public frc::TimedRobot {
 
   frc::Joystick gamepad{0};
 
-  rev::CANSparkMax leftFront{10, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax leftBack{11, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax rightFront{12, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax rightBack{13, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax leftFront{12, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax leftBack{10, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax rightFront{13, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax rightBack{11, rev::CANSparkMax::MotorType::kBrushless};
   
   double leftPower;
   double rightPower;

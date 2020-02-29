@@ -34,6 +34,7 @@ class Robot : public frc::TimedRobot {
   void AutoPathThree(double speed);
   void DrivePower();
   void LiftScrew();
+  void IntakePosition();
   void IntakePower();
   void Winch();
 
