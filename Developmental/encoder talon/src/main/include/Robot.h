@@ -10,10 +10,9 @@
 #include <string>
 
 #include <frc/TimedRobot.h>
-#include <frc/Compressor.h>
-#include <frc/Solenoid.h>
-#include <frc/Joystick.h>
 #include <frc/smartdashboard/SendableChooser.h>
+#include <ctre/Phoenix.h>
+#include <frc/Joystick.h>
 
 class Robot : public frc::TimedRobot {
  public:
@@ -31,9 +30,7 @@ class Robot : public frc::TimedRobot {
   const std::string kAutoNameCustom = "My Auto";
   std::string m_autoSelected;
 
-  frc::Joystick gamepad{0};
+  TalonSRX arm{10};
 
-  frc::Compressor compressor{0};
-  frc::Solenoid Solenoid1{0};
-  frc::Solenoid Solenoid2{1};
-  };
+  frc::Joystick gamepad{0};
+};

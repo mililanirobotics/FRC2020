@@ -23,10 +23,8 @@ void Robot::RobotInit()
   m_chooser.AddOption(kAutoNameNotDirectRight, kAutoNameNotDirectRight);
   m_chooser.AddOption(kAutoNameDiagonalRight, kAutoNameDiagonalRight);
 
-  //m_controlScheme = new ZandersControlScheme(joyStickLeft, joyStickRight);
-  //m_controlScheme = new MatthewPrimary(gamepad);
   m_controlScheme = new ArcadeControlScheme(gamepad);
-  m_secondControlScheme = new MatthewSecondary(gamepadSecondaryControls);
+  m_secondControlScheme = new TroyAndTariqSecondary(gamepadSecondaryControls);
 
   frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
 
@@ -57,56 +55,71 @@ void Robot::RobotPeriodic() {}
  * make sure to add them to the chooser code above as well.
  */
 
-void Robot::AutoPathOne(bool sideOfField, double speed)
+void Robot::AutoTurn(double degreesTurned, double speed)
 {
-  m_ahrs->ZeroYaw();
   double angle = m_ahrs->GetAngle();
-  if (sideOfField)
+  while (angle > degreesTurned && IsAutonomous() && IsEnabled())
   {
-    while (angle > -29 && IsAutonomous() && IsEnabled())
-    {
-      leftFront.Set(-0.5 * speed);
-      rightFront.Set(0.5 * speed);
-      angle = m_ahrs->GetAngle();
-      frc::SmartDashboard::PutNumber("angles 70:", angle);
-    }
+    leftFront.Set(-0.5 * speed);
+    rightFront.Set(0.5 * speed);
+    angle = m_ahrs->GetAngle();
+    frc::SmartDashboard::PutNumber("angles 70:", angle);
+  }
+}
+void Robot::Limelight(double speed, double &leftPower, double &rightPower)
+{
+  auto inst = nt::NetworkTableInstance::GetDefault();
+  auto limelight = inst.GetTable("limelight");
+  double alignment = limelight->GetNumber("tx", 0.0);
+  frc::SmartDashboard::PutNumber("alignment: ", alignment);
+  double offsetAdjust = fabs(alignment * 0.03); //changes how much the alignment adjusts by 0.02
+  if (alignment < 0)                            //turn left
+  {
+    leftPower = 0.4 * speed;
+    rightPower = ((0.4 + offsetAdjust) * speed);
+  }
+  else if (alignment > 0) //turn right
+  {
+    leftPower = ((0.4 + offsetAdjust) * speed);
+    rightPower = (0.4 * speed);
   }
   else
   {
-    while (angle < 29 && IsAutonomous() && IsEnabled())
-    {
-      leftFront.Set(0.5 * speed);
-      rightFront.Set(-0.5 * speed);
-      angle = m_ahrs->GetAngle();
-      frc::SmartDashboard::PutNumber("angles 80:", angle);
-    }
+    leftPower = (0.4 * speed);
+    rightPower = (0.4 * speed);
   }
-  std::cout << "working" << std::endl;
+}
+void Robot::AutoAlign(double speed)
+{
+  double leftPower = 0;
+  double rightPower = 0;
   auto inst = nt::NetworkTableInstance::GetDefault();
   auto limelight = inst.GetTable("limelight");
   double height = limelight->GetNumber("ty", 0.0);
   while (height < 2.08 && IsAutonomous() && IsEnabled())
   {
-    double alignment = limelight->GetNumber("tx", 0.0);
-    frc::SmartDashboard::PutNumber("alignment: ", alignment);
-    double offsetAdjust = fabs(alignment * 0.03); //changes how much the alignment adjusts by 0.02
-    if (alignment < 0)                            //turn left
-    {
-      leftFront.Set(0.4 * speed);
-      rightFront.Set((0.4 + offsetAdjust) * speed);
-    }
-    else if (alignment > 0) //turn right
-    {
-      leftFront.Set((0.4 + offsetAdjust) * speed);
-      rightFront.Set(0.4 * speed);
-    }
-    else
-    {
-      leftFront.Set(0.4 * speed);
-      rightFront.Set(0.4 * speed);
-    }
+    Limelight(speed, leftPower, rightPower);
+    leftFront.Set(leftPower);
+    rightFront.Set(rightPower);
     height = limelight->GetNumber("ty", 0.0);
   }
+}
+
+void Robot::AutoPathOne(bool sideOfField, double speed)
+{
+  double degrees = 0;
+  if (sideOfField)
+  {
+    degrees = -29;
+  }
+  else
+  {
+    degrees = 29;
+  }
+
+  AutoTurn(degrees, speed);
+  AutoAlign(speed);
+
   leftFront.Set(0);
   rightFront.Set(0);
 }
@@ -121,127 +134,54 @@ double Robot::MotorConversion(double distance)
 }
 
 void Robot::AutoPathTwo(bool sideOfField, double speed) // not direct route
-{
-  m_ahrs->ZeroYaw();                                // Sets the Nav x to 0
-  double angle = m_ahrs->GetAngle();                // Gets the angle the nav x is now
+{                               // Sets the Nav x to 0
   double travelDistance = 60.8;                     // States the distance we need to travel
   travelDistance = MotorConversion(travelDistance); // Calls upon the function MotorConversions and gets the new value we have to move the motors
+  double degrees = 0;
 
   if (sideOfField) // Checks to see which side the robot is placed the left or the right, if it true the robot needs to be on the right if it is false the robot is on the left side
   {
-    while (angle > -60 && IsAutonomous() && IsEnabled()) // Checks to see if the robot is at a certain angle, if auto is selected and if it is enabled, if so then it goes through the while loop
-    {
-      leftFront.Set(-0.5 * speed);
-      rightFront.Set(0.5 * speed);
-      angle = m_ahrs->GetAngle();                       // updates the angle of the robot
-      frc::SmartDashboard::PutNumber("angles:", angle); // returns the value of the angle to the smart dashboard
-    }
+    degrees = -60;
   }
   else
   {
-    while (angle < 60 && IsEnabled() && IsAutonomous()) // Checks to see if the robot is at a certain angle, if auto is selected and if it is enabled, if so then it goes through the while loop
-    {
-      leftFront.Set(0.5 * speed);
-      rightFront.Set(-0.5 * speed);
-      angle = m_ahrs->GetAngle();                       // updates the angle of the robot
-      frc::SmartDashboard::PutNumber("angles:", angle); // returns the value of the angle to the smart dashboard
-    }
+    degrees = 60;
   }
+  
+  AutoTurn(degrees, speed);
   leftFront.Set(0);            // Sets the motor power back to 0
   rightFront.Set(0);           // Sets the motor power back to 0
   leftEncoder.SetPosition(0);  // Sets the encoder value back to 0 for the left side motors
   rightEncoder.SetPosition(0); // Sets the encoder value back to 0 for the right side motors
 
-  // Tells the robot to move a certain distance with the travel distance and the value of the left encoder
-  while (travelDistance >= leftEncoder.GetPosition() && IsAutonomous() && IsEnabled())
-  {
-    leftFront.Set(0.5 * speed); // Sets the speed of the robot for moving
-    rightFront.Set(0.5 * speed);
-    frc::SmartDashboard::PutNumber("moved: ", leftEncoder.GetPosition()); // returns how much the robot moved into the smart dashboard
-    std::cout << travelDistance << std::endl;                             // prints the travel distance the robot has to travel
-  }
+  rightPIDController.SetP(0.000001); // defines the PIDF controls
+  rightPIDController.SetFF(0.000169);
+  leftPIDController.SetP(0.000001);
+  leftPIDController.SetFF(0.000169);
+  rightPIDController.SetReference(travelDistance, rev::ControlType::kPosition); // tells the motor to run until it reaches that set position
+  leftPIDController.SetReference(travelDistance, rev::ControlType::kPosition);
 
-  leftFront.Set(0); // Sets the motor power back to 0
-  rightFront.Set(0);
+  while (leftEncoder.GetPosition() < travelDistance && IsAutonomous() && IsEnabled()) // Test this
+  {
 
-  if (sideOfField)
-  {
-    while (angle < 0 && IsAutonomous() && IsEnabled())
-    {
-      leftFront.Set(0.5 * speed);
-      rightFront.Set(-0.5 * speed);
-      angle = m_ahrs->GetAngle();
-      frc::SmartDashboard::PutNumber("angles:", angle);
-    }
   }
-  else
-  {
-    while (angle > 0 && IsAutonomous() && IsEnabled())
-    {
-      leftFront.Set(-0.5 * speed);
-      rightFront.Set(0.5 * speed);
-      angle = m_ahrs->GetAngle();
-      frc::SmartDashboard::PutNumber("angles:", angle);
-    }
-  }
-  auto inst = nt::NetworkTableInstance::GetDefault();
-  auto limelight = inst.GetTable("limelight");
-  double height = limelight->GetNumber("ty", 0.0);
-  while (height < 2.09 && IsAutonomous() && IsEnabled())
-  {
-    double alignment = limelight->GetNumber("tx", 0.0);
-    frc::SmartDashboard::PutNumber("alignment: ", alignment);
-    double offsetAdjust = fabs(alignment * 0.03); //changes how much the alignment adjusts by 0.02
-    if (alignment < 0)                            //turn left
-    {
-      leftFront.Set(0.4 * speed);
-      rightFront.Set((0.4 + offsetAdjust) * speed);
-    }
-    else if (alignment > 0) //turn right
-    {
-      leftFront.Set((0.4 + offsetAdjust) * speed);
-      rightFront.Set(0.4 * speed);
-    }
-    else
-    {
-      leftFront.Set(0.4 * speed);
-      rightFront.Set(0.4 * speed);
-    }
-    height = limelight->GetNumber("ty", 0.0);
-  }
-  leftFront.Set(0);
+  rightPIDController.SetReference(0, rev::ControlType::kDutyCycle);
+  leftPIDController.SetReference(0, rev::ControlType::kDutyCycle);
+
+  degrees = 0;
+
+  AutoTurn(degrees, speed); // Turns the robot till it reaches degree
+  AutoAlign(speed); // aligns the robot to the target
+  
+
+  leftFront.Set(0); // sets the motors back to 0 once it reaches the target
   rightFront.Set(0);
 }
 
 void Robot::AutoPathThree(double speed)
 {
-  auto inst = nt::NetworkTableInstance::GetDefault();
-  auto limelight = inst.GetTable("limelight");
-
-  double height = limelight->GetNumber("ty", 0.0);
-  while (height < 1.09 && IsAutonomous() && IsEnabled())
-  {
-    double alignment = limelight->GetNumber("tx", 0.0);
-    frc::SmartDashboard::PutNumber("height: ", height);
-    double offsetAdjust = fabs(alignment * 0.03); //changes how much the alignment adjusts by 0.02
-    if (alignment < 0)                            //turn left
-    {
-      leftFront.Set(0.4 * speed);
-      rightFront.Set((0.4 + offsetAdjust) * speed);
-    }
-    else if (alignment > 0) //turn right
-    {
-      leftFront.Set((0.4 + offsetAdjust) * speed);
-      rightFront.Set(0.4 * speed);
-    }
-    else
-    {
-      leftFront.Set(0.4 * speed);
-      rightFront.Set(0.4 * speed);
-    }
-    height = limelight->GetNumber("ty", 0.0);
-  }
-  leftFront.Set(0);
+  AutoAlign(speed); // aligns the robot to the target
+  leftFront.Set(0); // sets the motors back to 0 once it reaches the target
   rightFront.Set(0);
 }
 
@@ -249,7 +189,6 @@ void Robot::AutonomousInit()
 {
   m_autoSelected = m_chooser.GetSelected();                      // grabs the option that was selected from the smart dashboard
   frc::SmartDashboard::PutString("auto Mode: ", m_autoSelected); // prints the auto path that was selected on the smart Dashboard
-  std::cout << "Auto selected: " << m_autoSelected << std::endl; // Prints the auto path that was selected in the console
   m_ahrs->ZeroYaw();                                             // sets the Nav x back to 0
   leftBack.Follow(leftFront, false);                             // Sets the left back motor to follow the front motor
   rightBack.Follow(rightFront, false);                           // Sets the right back motor to follow the right motor
@@ -276,14 +215,13 @@ void Robot::AutonomousInit()
   {
     AutoPathThree(slowmode);
   }
-  std::cout << "you are leaving auto init" << std::endl;
 }
 
 void Robot::AutonomousPeriodic()
 {
   return;
 }
-#ifdef TELEOPENABLED
+
 void Robot::DrivePower()
 {
   //Grabs the input from the gamepads for tank drive
@@ -299,45 +237,47 @@ void Robot::DrivePower()
 }
 void Robot::LiftScrew()
 {
+  #ifdef ADDLIFT
   // gets the power to set the motor to
   double speed = m_controlScheme->ArmLift();
   // Sets power to the arm lift motor
   linearAch.Set(ControlMode::PercentOutput, speed);
   frc::SmartDashboard::PutNumber("speed", speed);
+  #endif
 }
 void Robot::Winch() // sets the power for the winch
 {
+  #ifdef ADDLIFT
   winchSpeed = m_secondControlScheme->Winch(); // returns the value the winch attribute gives from secondControlScheme
 
   // Sets the power of the winch motors
   winchLeft.Set(ControlMode::PercentOutput, winchSpeed);
   winchRight.Set(ControlMode::PercentOutput, winchSpeed);
   frc::SmartDashboard::PutNumber("Winch speed", winchSpeed);
+  #endif
 }
 
 void Robot::IntakePosition() // used to set the pistons value
 {
-  m_secondControlScheme->pivot(upPiston, downPiston); //grabs values from the pivot attribute of secondControlScheme
+  m_secondControlScheme->pivot(pivot); //grabs values from the pivot attribute of secondControlScheme
 
   // Sets the piston to open or not depending on the position its suppose to be in
-  leftUpPiston.Set(upPiston);
-  leftDownPiston.Set(downPiston);
-  rightDownPiston.Set(downPiston);
-  rightUpPiston.Set(upPiston);
+  leftPiston.Set(pivot);
+  rightPiston.Set(pivot);
 }
 void Robot::IntakePower()
 {
-  double power = m_secondControlScheme->Intake(); // calls upon the Intake attribute of the m_secondControlScheme object
+  m_secondControlScheme->Intake(sPower, fPower); // calls upon the Intake attribute of the m_secondControlScheme object
 
   // Sets the power of the Intake motors to the power
-  intakeLeft.Set(ControlMode::PercentOutput, power);
-  intakeRight.Set(ControlMode::PercentOutput, power);
+  shooterMotor.Set(ControlMode::PercentOutput, sPower);
+  feederMotor.Set(ControlMode::PercentOutput, fPower);
 }
-#endif // teleop enabled
+
 void Robot::TeleopInit()
 {
-#ifdef TELEOPENABLED
   //Initializes the motors for winch setting what the high and low values are
+  #ifdef ADDLIFT
   winchLeft.ConfigPeakOutputForward(1, 10);
   winchLeft.ConfigPeakOutputReverse(-1, 10);
   winchLeft.SetNeutralMode(NeutralMode::Brake);
@@ -345,28 +285,30 @@ void Robot::TeleopInit()
   winchRight.ConfigPeakOutputForward(1, 10);
   winchRight.ConfigPeakOutputReverse(-1, 10);
   winchRight.SetNeutralMode(NeutralMode::Brake);
+  #endif
 
   // Initialiezes the motors setting the highes and lowest values for the intake
-  intakeLeft.ConfigPeakOutputForward(1, 10);
+  /*intakeLeft.ConfigPeakOutputForward(1, 10);
   intakeLeft.ConfigPeakOutputReverse(-1, 10);
   intakeLeft.SetNeutralMode(NeutralMode::Brake);
 
   intakeRight.ConfigPeakOutputForward(1, 10);
   intakeRight.ConfigPeakOutputReverse(-1, 10);
   intakeRight.SetInverted(motorcontrol::InvertType::InvertMotorOutput); //sets the motor inverted
-  intakeRight.SetNeutralMode(NeutralMode::Brake);
+  intakeRight.SetNeutralMode(NeutralMode::Brake);*/
 
   //Initializes the motors for linear motor setting what the high and low values are
+  #ifdef ADDLIFT
   linearAch.ConfigPeakOutputForward(1, 10);
   linearAch.ConfigPeakOutputReverse(-1, 10);
   linearAch.SetNeutralMode(NeutralMode::Brake);
+  #endif
 
   // turns the compressor on
   compressor.SetClosedLoopControl(true);
 
   // sets the nav x to 0
   m_ahrs->ZeroYaw();
-#endif
 }
 
 void Robot::TeleopPeriodic()

@@ -60,17 +60,22 @@ void Robot::AutonomousPeriodic() {
 }
 
 void Robot::TeleopInit() {
-  compressor.SetClosedLoopControl(true);
+  arm.ConfigPeakOutputForward(1, 10);
+  arm.ConfigPeakOutputReverse(-1, 10);
+  arm.SetNeutralMode(NeutralMode::Brake);
+
+  arm.SetSelectedSensorPosition(0);
 }
 
 void Robot::TeleopPeriodic() {
-  if(gamepad.GetRawButton(1)){
-    Solenoid1.Set(true);
-    Solenoid2.Set(true);
+  double power = gamepad.GetRawAxis(1);
+  if (arm.GetSelectedSensorPosition() < 150)
+  {
+    arm.Set(ControlMode::PercentOutput, power);
+    frc::SmartDashboard::PutNumber("encoder value", arm.GetSelectedSensorPosition());
   }
-  if(gamepad.GetRawButton(2)){
-    Solenoid1.Set(false);
-    Solenoid2.Set(false);
+  else{
+  arm.Set(ControlMode::PercentOutput, 0);
   }
 }
 

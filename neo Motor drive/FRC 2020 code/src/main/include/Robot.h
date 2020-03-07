@@ -19,8 +19,9 @@
 #include <frc/Joystick.h>
 #include "AHRS.h"
 
-class Robot : public frc::TimedRobot {
- public:
+class Robot : public frc::TimedRobot
+{
+public:
   void RobotInit() override;
   void RobotPeriodic() override;
   void AutonomousInit() override;
@@ -28,17 +29,22 @@ class Robot : public frc::TimedRobot {
   void TeleopInit() override;
   void TeleopPeriodic() override;
   void TestPeriodic() override;
-  double MotorConversion(double distance);
-  void AutoPathOne(bool sideOfField, double speed);
-  void AutoPathTwo(bool sideOfField, double speed);
-  void AutoPathThree(double speed);
-  void DrivePower();
-  void LiftScrew();
-  void IntakePosition();
-  void IntakePower();
-  void Winch();
 
- private:
+  double MotorConversion(double distance);                                    // This converts inches into rotations for the motor
+  void AutoPathOne(bool sideOfField, double speed);                           // Direct path to target
+  void AutoPathTwo(bool sideOfField, double speed);                           // Travels diagnally and directly horizontal to the target
+  void AutoPathThree(double speed);                                           // Horizontal path to target
+  void DrivePower();                                                          // States the power for the drive motors during teleop
+  void IntakePosition();                                                      // Pivots the intake: piston controlled
+  void IntakePower();                                                         // Sets the power of the intake motors
+  void Winch();                                                               // Sets a static power for the motor and the motor can only go one way
+  void LiftScrew();                                                           // States the power of the lift motor
+  static void Limelight(double speed, double &leftPower, double &rightPower); // Used for auto alignment
+  void AutoTurn(double degreesTurned, double speed);                          //used to turn the robot to a set position
+  void AutoAlign(double speed);                                               // Uses the auto alignment and adds the ty value
+
+private:
+  // Allows the user to select which auto they want in the smart dashboad
   frc::SendableChooser<std::string> m_chooser;
   const std::string kAutoNameDiagonalLeft = "Option diagnal Left Side";
   const std::string kAutoNameDiagonalRight = "Option diagnal Right Side";
@@ -47,50 +53,55 @@ class Robot : public frc::TimedRobot {
   const std::string kAutoNameStraight = "Center";
   std::string m_autoSelected;
 
-  #define TELEOPENABLED
+// Used to mass comment out things
+#define TELEOPENABLED
 
-  #ifdef TELEOPENABLED
+  // Controllers that we could have used
   frc::Joystick gamepad{0};
   frc::Joystick joyStickLeft{1};
   frc::Joystick joyStickRight{2};
   frc::Joystick gamepadSecondaryControls{3};
 
+  frc::Compressor compressor{0};  // defines the compress
+  frc::Solenoid rightPiston{0}; // defines the right piston
+  frc::Solenoid leftPiston{1};
 
-  frc::Compressor compressor{0};
-  frc::Solenoid rightUpPiston{0};
-  frc::Solenoid rightDownPiston{1};
-  frc::Solenoid leftUpPiston{2};
-  frc::Solenoid leftDownPiston{3};
-  #endif
-
+  //Defines the Neo motors we are using for the drive
   rev::CANSparkMax leftFront{10, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax leftBack{11, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax rightFront{12, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax rightBack{13, rev::CANSparkMax::MotorType::kBrushless};
 
+  // Defines the Neo motor encoders
   rev::CANEncoder leftEncoder{leftFront, rev::CANEncoder::EncoderType::kHallSensor, 42};
   rev::CANEncoder rightEncoder{rightFront, rev::CANEncoder::EncoderType::kHallSensor, 42};
 
-  #ifdef TELEOPENABLED
-  TalonSRX linearAch{14};
+  // Defines the Neo Motors PID Controller
+  rev::CANPIDController leftPIDController{leftFront};
+  rev::CANPIDController rightPIDController{rightFront};
 
-  TalonSRX winchLeft{15};
+#ifdef ADDLIFT
+  TalonSRX linearAch{14}; // lift motor
+
+  TalonSRX winchLeft{15}; // defines the winch motors
   TalonSRX winchRight{16};
+#endif
 
-  TalonSRX intakeLeft{17};
-  TalonSRX intakeRight{18};
+  TalonSRX shooterMotor{17}; // defines the intake motors
+  TalonSRX feederMotor{18};
 
-  PrimaryControlScheme* m_controlScheme;
-  SecondaryControl* m_secondControlScheme;
-  #endif
-  AHRS* m_ahrs;
+  PrimaryControlScheme *m_controlScheme;   // calls upon the control library we created for each driver
+  SecondaryControl *m_secondControlScheme; // calls upon the control library we created for the secondary driver
   
-  double leftPower; // used for the tank drive
-  double rightPower; // used for the tank drive
-  double drivePower; // used for arcade drive
-  double forwardBackward; //used for arcade drive
-  double leftRight; //used for arcade drive
-  double winchSpeed; 
-  bool upPiston;
-  bool downPiston;
+  AHRS *m_ahrs; // This defines the NAV X or gyro we use
+
+  double leftPower;       // used for the tank drive
+  double rightPower;      // used for the tank drive
+  double drivePower;      // used for arcade drive
+  double forwardBackward; // used for arcade drive
+  double leftRight;       // used for arcade drive
+  double winchSpeed;      // Sets the winch speed
+  bool pivot;
+  double fPower;
+  double sPower;
 };

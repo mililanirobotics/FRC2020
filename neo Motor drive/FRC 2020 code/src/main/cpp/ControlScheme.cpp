@@ -1,11 +1,11 @@
 #include "ControlScheme.hpp"
 #include <iostream>
-#include <frc/WPILib.h>
+#include <Robot.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 
 void TankControlScheme::getMotorPower(double &leftPower, double &rightPower) //Tank code gets the power back for the function
 {
-    leftPower = -(m_gamepad.GetRawAxis(1) * .6); //limits the power than can come out to 0.6
+    leftPower = -(m_gamepad.GetRawAxis(1) * .6);  //limits the power than can come out to 0.6
     rightPower = -(m_gamepad.GetRawAxis(5) * .6); //limits the power than can come out to 0.6
 }
 TankControlScheme::TankControlScheme(frc::Joystick &gamepad) : m_gamepad(gamepad) // Initialize the gamepad
@@ -14,7 +14,7 @@ TankControlScheme::TankControlScheme(frc::Joystick &gamepad) : m_gamepad(gamepad
 void TankControlScheme::AutoAlign(double &leftPower, double &rightPower) //Initializes the auto align so it can build
 {
 }
-double TankControlScheme::ArmLift()//Initializes the arm lift so it can build
+double TankControlScheme::ArmLift() //Initializes the arm lift so it can build
 {
 }
 
@@ -25,27 +25,7 @@ void MatthewPrimary::AutoAlign(double &leftPower, double &rightPower) // Sets th
 {
     if (m_gamepad.GetRawButton(5)) // check if left bumper is being pushed down
     {
-        auto inst = nt::NetworkTableInstance::GetDefault();
-        auto limelight = inst.GetTable("limelight");
-
-        double alignment = limelight->GetNumber("tx", 0.0);
-        frc::SmartDashboard::PutNumber("alignment: ", alignment);
-        double offsetAdjust = fabs(alignment * 0.03); //changes how much the alignment adjusts by 0.02
-        if (alignment < 0)                            //turn left
-        {
-            leftPower = (0.4);
-            rightPower = (0.4 + offsetAdjust);
-        }
-        else if (alignment > 0) //turn right
-        {
-            leftPower = (0.4 + offsetAdjust);
-            rightPower = (0.4);
-        }
-        else
-        {
-            leftPower = (0.4);
-            rightPower = (0.4);
-        }
+        Robot::Limelight(1, leftPower, rightPower);
     }
 }
 double MatthewPrimary::ArmLift()
@@ -66,30 +46,16 @@ double MatthewPrimary::ArmLift()
     return liftSpeed;
 }
 
+KentPrimary::KentPrimary(frc::Joystick &gamepad) :TankControlScheme(gamepad)
+{
+    
+}
+
 void KentPrimary::AutoAlign(double &leftPower, double &rightPower) // sets power of motors to align the robot
 {
     if (m_gamepad.GetRawButton(1)) // A button
     {
-        auto inst = nt::NetworkTableInstance::GetDefault();
-        auto limelight = inst.GetTable("limelight");
-
-        double alignment = limelight->GetNumber("tx", 0.0);
-        double offsetAdjust = fabs(alignment * 0.03); //changes how much the alignment adjusts by 0.02
-        if (alignment < 0)                            //turn left
-        {
-            leftPower = (0.4 + offsetAdjust);
-            rightPower = (0.4 + offsetAdjust);
-        }
-        else if (alignment > 0) //turn right
-        {
-            leftPower = (0.4 + offsetAdjust);
-            rightPower = (0.4 + offsetAdjust);
-        }
-        else
-        {
-            leftPower = (0.4);
-            rightPower = (0.4);
-        }
+        Robot::Limelight(1, leftPower, rightPower);
     }
 }
 double KentPrimary::ArmLift()
@@ -108,13 +74,11 @@ double KentPrimary::ArmLift()
     }
 }
 
-
-
 // ArcadeControlScheme was used for tariq and Troy. There primary drive controls are the same
 void ArcadeControlScheme::getMotorPower(double &leftPower, double &rightPower) //sets the power of the motors in an arcade drive
 {
     double forwardBackward = -(m_gamepad.GetRawAxis(1) * .6); //grabs the input and gives it to a variable for forward
-    double leftRight = (m_gamepad.GetRawAxis(4) * .6); //grabs the input and gives it to a variable for turning
+    double leftRight = (m_gamepad.GetRawAxis(4) * .6);        //grabs the input and gives it to a variable for turning
     double drivePower = 0;
 
     // Checks to make sure that the user just wants to go straight and not turn. If so then it tells the motors to move according to the input of controllers
@@ -171,28 +135,9 @@ ArcadeControlScheme::ArcadeControlScheme(frc::Joystick &gamepad) : m_gamepad(gam
 }
 void ArcadeControlScheme::AutoAlign(double &leftPower, double &rightPower) //sets the power for the motors to align it self with the camera
 {
-    if (m_gamepad.GetRawButton(1))// A button for auto alignment
+    if (m_gamepad.GetRawButton(1)) // A button for auto alignment
     {
-        auto inst = nt::NetworkTableInstance::GetDefault();
-        auto limelight = inst.GetTable("limelight");
-
-        double alignment = limelight->GetNumber("tx", 0.0);
-        double offsetAdjust = fabs(alignment * 0.03); //changes how much the alignment adjusts by 0.02
-        if (alignment < 0)                            //turn left
-        {
-            leftPower = (0.4 + offsetAdjust);
-            rightPower = (0.4 + offsetAdjust);
-        }
-        else if (alignment > 0) //turn right
-        {
-            leftPower = (0.4 + offsetAdjust);
-            rightPower = (0.4 + offsetAdjust);
-        }
-        else
-        {
-            leftPower = (0.4);
-            rightPower = (0.4);
-        }
+       Robot::Limelight(1, leftPower,rightPower);
     }
 }
 double ArcadeControlScheme::ArmLift()
@@ -216,7 +161,7 @@ double ArcadeControlScheme::ArmLift()
 void ZandersControlScheme::getMotorPower(double &leftPower, double &rightPower) // returns power to the motor uses joysticks
 {
     double forwardBackward = -(m_joyStickLeft.GetRawAxis(1) * .6); // sets the input of the axis to the variable
-    double leftRight = (m_joyStickRight.GetRawAxis(1) * .6); // sets the input of the axis to the variable
+    double leftRight = (m_joyStickRight.GetRawAxis(1) * .6);       // sets the input of the axis to the variable
     double drivePower = 0;
 
     // Checks to make sure that the user just wants to go straight and not turn. If so then it tells the motors to move according to the input of controllers
@@ -267,26 +212,7 @@ void ZandersControlScheme::AutoAlign(double &leftPower, double &rightPower) // r
 {
     if (m_joyStickRight.GetRawButton(1)) // A button
     {
-        auto inst = nt::NetworkTableInstance::GetDefault();
-        auto limelight = inst.GetTable("limelight");
-
-        double alignment = limelight->GetNumber("tx", 0.0);
-        double offsetAdjust = fabs(alignment * 0.03); //changes how much the alignment adjusts by 0.02
-        if (alignment < 0)                            //turn left
-        {
-            leftPower = (0.4 + offsetAdjust);
-            rightPower = (0.4 + offsetAdjust);
-        }
-        else if (alignment > 0) //turn right
-        {
-            leftPower = (0.4 + offsetAdjust);
-            rightPower = (0.4 + offsetAdjust);
-        }
-        else
-        {
-            leftPower = (0.4);
-            rightPower = (0.4);
-        }
+        Robot::Limelight(1, leftPower, rightPower);
     }
 }
 double ZandersControlScheme::ArmLift()
@@ -307,7 +233,7 @@ double ZandersControlScheme::ArmLift()
     return liftPower;
 }
 
-MatthewSecondary::MatthewSecondary(frc::Joystick &gamepad) : m_gamepad(gamepad)// initializes the gamepad for secondary controlls
+MatthewSecondary::MatthewSecondary(frc::Joystick &gamepad) : m_gamepad(gamepad) // initializes the gamepad for secondary controlls
 {
 }
 double MatthewSecondary::Winch() // used to send power to the winch motors
@@ -323,111 +249,44 @@ double MatthewSecondary::Winch() // used to send power to the winch motors
     }
     return WinchSpeed;
 }
-double MatthewSecondary::Intake() //Set power for intake and sends it to the motors
+void MatthewSecondary::Intake(double& ShooterPower, double& FeederPower) //Set power for intake and sends it to the motors
 {
-    double IntakePower = 0;
-    if (m_gamepad.GetRawAxis(3) > 0.1) // right trigger
+    if (m_gamepad.GetRawAxis(2) > 0.1)
     {
-        IntakePower = 1; //sets the power
+        FeederPower = -1;
     }
-    else if (m_gamepad.GetRawButton(6)) // right bumper
+    else if(m_gamepad.GetRawAxis(3) > 0.1)
     {
-        IntakePower = -1;
+        FeederPower = 1;
     }
     else
     {
-        IntakePower = 0;
-    }
-    return IntakePower;
-}
-void MatthewSecondary::pivot(bool &firstPiston, bool &secondPiston) //used to return back if the pistons should be extended or not
-{
-    int position = 0; // used to keep track what position the pistons are set to
-    if (m_gamepad.GetRawButtonPressed(1) && position <= 1) // A button
-    {
-        position++;
-    }
-    else if(m_gamepad.GetRawButtonPressed(3) && position >= 1) // X button
-    {
-        position--;
+        FeederPower = 0;
     }
 
-    if (position == 0) // sets the piston to its position
+    if (m_gamepad.GetRawButton(5))
     {
-        firstPiston = true;
-        secondPiston = true;
+        ShooterPower = -1;
     }
-    else if (position == 1)
+    else if(m_gamepad.GetRawButton(6))
     {
-        firstPiston = true;
-        secondPiston = false;
-    }
-    else if (position == 2)
-    {
-        firstPiston = false;
-        secondPiston = false;
-    }
-}
-
-TariqSecondary::TariqSecondary(frc::Joystick &gamepad) : m_gamepad(gamepad)
-{
-}
-double TariqSecondary::Winch()
-{
-    double WinchSpeed = 0;
-    if (fabs(m_gamepad.GetRawAxis(1)) > 0.1) //left y axis joystick
-    {
-        WinchSpeed = 1;
+        ShooterPower = 1;
     }
     else
     {
-        WinchSpeed = 0;
+        ShooterPower = 0;
     }
-    return WinchSpeed;
 }
-double TariqSecondary::Intake()
-{
-    double IntakePower = 0;
-    if (m_gamepad.GetRawAxis(3) > 0.1) //right trigger
-    {
-        IntakePower = 1;
-    }
-    else if (m_gamepad.GetRawAxis(2) > 0.1) // left trigger
-    {
-        IntakePower = -1;
-    }
-    else
-    {
-        IntakePower = 0;
-    }
-    return IntakePower;
-}
-void TariqSecondary::pivot(bool &firstPiston, bool &secondPiston)
+void MatthewSecondary::pivot(bool &firstPiston)
 {
     int position = 0;
-    if (m_gamepad.GetRawButtonPressed(1) && position <= 1)
-    {
-        position++;
-    }
-    else if(m_gamepad.GetRawButtonPressed(2) && position >= 1)
-    {
-        position--;
-    }
-
-    if (position == 0)
+    if (m_gamepad.GetRawButtonPressed(1))
     {
         firstPiston = true;
-        secondPiston = true;
     }
-    else if (position == 1)
-    {
-        firstPiston = true;
-        secondPiston = false;
-    }
-    else if (position == 2)
+    else if (m_gamepad.GetRawButtonPressed(2))
     {
         firstPiston = false;
-        secondPiston = false;
     }
 }
 
@@ -447,56 +306,51 @@ double ZanderSecondary::Winch()
     }
     return WinchSpeed;
 }
-double ZanderSecondary::Intake()
+void ZanderSecondary::Intake(double& ShooterPower, double& FeederPower)
 {
-    double IntakePower = 0;
-    if (m_gamepad.GetRawAxis(2) > 0.1) // left trigger
+    if (m_gamepad.GetRawAxis(2) > 0.1)
     {
-        IntakePower = 1;
+        FeederPower = -1;
     }
-    else if (m_gamepad.GetRawAxis(3) > 0.1) // right trigger
+    else if(m_gamepad.GetRawAxis(3) > 0.1)
     {
-        IntakePower = -1;
+        FeederPower = 1;
     }
     else
     {
-        IntakePower = 0;
+        FeederPower = 0;
     }
-    return IntakePower;
+
+    if (m_gamepad.GetRawButton(5))
+    {
+        ShooterPower = -1;
+    }
+    else if(m_gamepad.GetRawButton(6))
+    {
+        ShooterPower = 1;
+    }
+    else
+    {
+        ShooterPower = 0;
+    }
 }
-void ZanderSecondary::pivot(bool &firstPiston, bool &secondPiston)
+void ZanderSecondary::pivot(bool &firstPiston)
 {
     int position = 0;
-    if (m_gamepad.GetRawButtonPressed(1) && position <= 1)
-    {
-        position++;
-    }
-    else if(m_gamepad.GetRawButtonPressed(4) && position >= 1)
-    {
-        position--;
-    }
-
-    if (position == 0)
+    if (m_gamepad.GetRawButtonPressed(1))
     {
         firstPiston = true;
-        secondPiston = true;
     }
-    else if (position == 1)
-    {
-        firstPiston = true;
-        secondPiston = false;
-    }
-    else if (position == 2)
+    else if (m_gamepad.GetRawButtonPressed(2))
     {
         firstPiston = false;
-        secondPiston = false;
     }
 }
 
-TroySecondary::TroySecondary(frc::Joystick &gamepad) : m_gamepad(gamepad)
+TroyAndTariqSecondary::TroyAndTariqSecondary(frc::Joystick &gamepad) : m_gamepad(gamepad)
 {
 }
-double TroySecondary::Winch()
+double TroyAndTariqSecondary::Winch()
 {
     double WinchSpeed = 0;
     if (m_gamepad.GetPOV(0)) // up button d pad
@@ -509,49 +363,65 @@ double TroySecondary::Winch()
     }
     return WinchSpeed;
 }
-double TroySecondary::Intake()
+void TroyAndTariqSecondary::Intake(double& ShooterPower, double& FeederPower)
 {
-    double IntakePower = 0;
-    if (m_gamepad.GetRawAxis(3) > 0.1) // right trigger
+    if (m_gamepad.GetRawAxis(2) > 0.1)
     {
-        IntakePower = 1;
+        FeederPower = -1;
     }
-    else if (m_gamepad.GetRawAxis(2) > 0.1) //left trigger
+    else if(m_gamepad.GetRawButton(5))
     {
-        IntakePower = -1;
+        FeederPower = 1;
+    }
+    
+    else if (m_gamepad.GetRawButton(1))
+    {
+        ShooterPower = -1;
+        FeederPower = -1;
+    }
+    else if (m_gamepad.GetRawButton(4))
+    {
+        ShooterPower = 1;
+        FeederPower = 1;
     }
     else
     {
-        IntakePower = 0;
-    }
-    return IntakePower;
-}
-void TroySecondary::pivot(bool &firstPiston, bool &secondPiston)
-{
-    int position = 0;
-    if (m_gamepad.GetRawButtonPressed(1) && position <= 1)
-    {
-        position++;
-    }
-    else if(m_gamepad.GetRawButtonPressed(3) && position >= 1)
-    {
-        position--;
+        FeederPower = 0;
     }
 
-    if (position == 0)
+    if (m_gamepad.GetRawAxis(3) > 0.1)
+    {
+        ShooterPower = -1;
+    }
+    else if(m_gamepad.GetRawButton(6))
+    {
+        ShooterPower = 1;
+    }
+    
+    else if (m_gamepad.GetRawButton(1))
+    {
+        ShooterPower = -1;
+        FeederPower = -1;
+    }
+    else if (m_gamepad.GetRawButton(4))
+    {
+        ShooterPower = 1;
+        FeederPower = 1;
+    }
+    else
+    {
+        ShooterPower = 0;
+    }
+}
+void TroyAndTariqSecondary::pivot(bool &firstPiston)
+{
+    if (m_gamepad.GetPOV(0))
     {
         firstPiston = true;
-        secondPiston = true;
     }
-    else if (position == 1)
-    {
-        firstPiston = true;
-        secondPiston = false;
-    }
-    else if (position == 2)
+    else if (m_gamepad.GetPOV(180))
     {
         firstPiston = false;
-        secondPiston = false;
     }
 }
 
@@ -571,49 +441,65 @@ double KentSecondary::Winch()
     }
     return WinchSpeed;
 }
-double KentSecondary::Intake()
+void KentSecondary::Intake(double& ShooterPower, double& FeederPower)
 {
-    double IntakePower = 0;
-    if (m_gamepad.GetRawButton(3)) // x button
+    if (m_gamepad.GetRawAxis(2) > 0.1)
     {
-        IntakePower = 1;
+        FeederPower = -1;
     }
-    else if (m_gamepad.GetRawButton(2)) // y button
+    else if(m_gamepad.GetRawButton(5))
     {
-        IntakePower = -1;
+        FeederPower = 1;
+    }
+    
+    else if (m_gamepad.GetRawButton(1))
+    {
+        ShooterPower = -1;
+        FeederPower = -1;
+    }
+    else if (m_gamepad.GetRawButton(4))
+    {
+        ShooterPower = 1;
+        FeederPower = 1;
     }
     else
     {
-        IntakePower = 0;
-    }
-    return IntakePower;
-}
-void KentSecondary::pivot(bool &firstPiston, bool &secondPiston)
-{
-    int position = 0;
-    if (m_gamepad.GetRawAxis(2) && position <= 1) // uses the left trigger
-    {
-        position++;
-        frc::Wait(0.05); // The wait exists so that way it does not go to the next position right away unintentionally
-    }
-    else if(m_gamepad.GetRawButtonPressed(5) && position >= 1) // uses the right bumper
-    {
-        position--;
+        FeederPower = 0;
     }
 
-    if (position == 0)
+    if (m_gamepad.GetRawAxis(3) > 0.1)
+    {
+        ShooterPower = -1;
+    }
+    else if(m_gamepad.GetRawButton(6))
+    {
+        ShooterPower = 1;
+    }
+    
+    else if (m_gamepad.GetRawButton(1))
+    {
+        ShooterPower = -1;
+        FeederPower = -1;
+    }
+    else if (m_gamepad.GetRawButton(4))
+    {
+        ShooterPower = 1;
+        FeederPower = 1;
+    }
+    else
+    {
+        ShooterPower = 0;
+    }
+}
+void KentSecondary::pivot(bool &firstPiston)
+{
+    int position = 0;
+    if (m_gamepad.GetRawAxis(2) > .1) // uses the left trigger
     {
         firstPiston = true;
-        secondPiston = true;
     }
-    else if (position == 1)
-    {
-        firstPiston = true;
-        secondPiston = false;
-    }
-    else if (position == 2)
+    else if (m_gamepad.GetRawButtonPressed(5)) // uses the right bumper
     {
         firstPiston = false;
-        secondPiston = false;
     }
 }
